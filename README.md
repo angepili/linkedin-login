@@ -5,4 +5,4 @@ npm install
 npm run dev
 ```
 
-[Tutorial completo disponibile qui](http://localhost:1313/post/linkedin-api-javascript/)
+[Tutorial completo disponibile qui](https://angelopili.it/post/linkedin-api-javascript/)
