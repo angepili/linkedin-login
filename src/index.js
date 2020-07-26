@@ -17,8 +17,17 @@ const parameters = new URLSearchParams(window.location.search);
 const btnLogin = document.getElementById('linkedin-login');
 const wrapper = document.getElementById('profile');
 
+/**
+ * 
+ * @param {*} target 
+ * @param {*} cors 
+ * Restituisce l'endpoint
+ */
 const getEndpoint = (target,cors=true) => (cors?corsUrl:'')+url[target]
 
+/**
+ * Apro la login di Linkedin, ed ottengo il parametro CODE in get
+ */
 const LnkLogin = ()=> {
     const params = {
         response_type:'code',
@@ -31,6 +40,9 @@ const LnkLogin = ()=> {
     window.open(urlWindow,'_self');
 }
 
+/**
+ * Ottengo il token, necessario ad eseguire le successive chiamate
+ */
 const LnkToken = ()=> {
     const config = {
         grant_type : 'authorization_code',
@@ -52,6 +64,9 @@ const LnkToken = ()=> {
     });
 }
 
+/**
+ * Ottengo i miei dati personali
+ */
 const LnkMe = ()=> {
     const { token } = store.get('linkedin');
     return new Promise((resolve, reject) => {
@@ -74,6 +89,9 @@ const LnkMe = ()=> {
     });
 }
 
+/**
+ * Eseguo il logout
+ */
 const LnkLogout = () => {
     const btnExit = document.getElementById('logout');
         btnExit.addEventListener('click',()=> { 
@@ -85,6 +103,9 @@ const LnkLogout = () => {
         })
 }
 
+/**
+ * Stampo i miei dati
+ */
 const LnkProfile = ()=> {
     const { localizedFirstName: firstname, localizedLastName: lastname  } = store.get('linkedin');
     wrapper.innerHTML = `
@@ -96,19 +117,28 @@ const LnkProfile = ()=> {
 
 const init = ()=> {
     const linkedin = store.get('linkedin');
+    // Se sono loggato, esiste l'oggetto linkedin, e quindi il token
     if( linkedin && linkedin.token ){
-        btnLogin.style.display = 'none'
-        LnkProfile();
-        LnkLogout();
-    } else if(parameters.get('code') && !linkedin?.token ){
-        btnLogin.style.display = 'none'
-        LnkToken()
+
+        btnLogin.style.display = 'none' // Nascondo il bottone
+        LnkProfile(); // Stampo i dati
+        LnkLogout(); // Se clicco su logout, distruggo la sessione
+    } 
+    // Abbiamo appena ottenuto il CODE ma non ancora il token
+    else if(parameters.get('code') && !linkedin?.token ){
+
+        btnLogin.style.display = 'none' // nascondo il bottone
+
+        LnkToken() // Avvio la catena di richieste per connettermi a linkedin
         .then( token => store.set('linkedin',{ token: token }) )
         .then( ()=> LnkMe() )
         .then( ()=> LnkProfile() )
         .then( ()=> LnkLogout() )
         .catch( err => console.log(err) )
-    } else {
+
+    } 
+    // Lo stato di partenza, ancora non ho nulla, devo intereccettare il click del bottone
+    else {
         btnLogin.addEventListener('click', ()=> LnkLogin() );
     }
 }
